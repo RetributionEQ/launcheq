@@ -99,6 +99,7 @@ func (c *Config) Verify() error {
 
 // Save writes the config to disk
 func (c *Config) Save() error {
+
 	w, err := os.Create(fmt.Sprintf("%s.yml", c.baseName))
 	if err != nil {
 		return fmt.Errorf("create %s.yml: %w", c.baseName, err)
