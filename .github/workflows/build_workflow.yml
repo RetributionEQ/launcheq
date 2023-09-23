@@ -11,9 +11,10 @@ jobs:
   platform_tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         persist-credentials: false
+        fetch-depth: 0
 
     - name: Set Version
       run: make set-version
@@ -35,7 +36,7 @@ jobs:
 
     - name: Build binary
       run: |
-        make build-windows
+        make build-windows-if-needed
 
     - name: Build Maps (If Exists)
       run: make maps
@@ -46,7 +47,7 @@ jobs:
         chmod +x filelistbuilder-linux-x64
         ./filelistbuilder-linux-x64 "rof" "${{env.STORAGE_URL}}" "../bin/launcheq.exe"
         mv eqemupatcher-hash.txt ../bin/launcheq-hash.txt
-        mv ../bin/launcheq.exe ../bin/${{env.EXE_NAME}}
+        mv ../bin/launcheq.exe ../bin/${{env.EXE_NAME}} || true
 
     # - name: Update coverage
     #   run: |
@@ -64,9 +65,9 @@ jobs:
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
+        automatic_release_tag: "${{ env.VERSION }}.${{ github.run_number }}"
         prerelease: false
-        title: "latest"
+        title: "${{ env.VERSION }}.${{ github.run_number }}"
         files: |
           bin/${{env.EXE_NAME}}
           bin/launcheq-hash.txt

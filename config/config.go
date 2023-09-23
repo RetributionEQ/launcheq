@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/erikgeiser/promptkit/confirmation"
 	"gopkg.in/yaml.v3"
 )
 
@@ -12,6 +14,7 @@ import (
 type Config struct {
 	FileListVersion string `yaml:"FileListVersion" desc:"Version of last file list fetched"`
 	baseName        string
+	IsAutoLaunch    bool `yaml:"IsAutoLaunch" desc:"Launch on startup"`
 }
 
 // New creates a new configuration
@@ -43,6 +46,17 @@ func New(ctx context.Context, baseName string) (*Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("open config: %w", err)
 		}
+	} else {
+		var isChoice bool
+
+		fmt.Println("Note: Say YES below if you don't plan to launch EQ yourself.")
+		isChoice, err = confirmation.New("Do you want to start EQ automatically after each patch?", confirmation.Yes).RunPrompt()
+		if err != nil {
+			return nil, fmt.Errorf("select auto update: %w", err)
+		}
+		fmt.Printf("You can edit the %s.yml file to change this choice later.\n", baseName)
+
+		cfg.IsAutoLaunch = isChoice
 	}
 
 	defer f.Close()
@@ -63,6 +77,15 @@ func New(ctx context.Context, baseName string) (*Config, error) {
 	err = yaml.NewDecoder(f).Decode(&cfg)
 	if err != nil {
 		return nil, fmt.Errorf("decode %s.yml: %w", baseName, err)
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read %s.yml: %w", baseName, err)
+	}
+	if !strings.Contains(string(data), "IsAutoLaunch") {
+		cfg.IsAutoLaunch = true
+		fmt.Println("no auto launch found, setting to true")
 	}
 
 	return &cfg, nil
