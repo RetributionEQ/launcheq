@@ -17,7 +17,6 @@ var (
 )
 
 func main() {
-
 	PatcherURL = strings.TrimSuffix(PatcherURL, "/")
 	c, err := client.New(Version, PatcherURL)
 	if err != nil {

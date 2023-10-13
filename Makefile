@@ -2,6 +2,8 @@ NAME ?= launcheq
 VERSION ?= 0.0.12
 FILELIST_URL ?= https://raw.githubusercontent.com/retributioneq/launcheq/rof
 PATCHER_URL ?= https://github.com/retributioneq/launcheq/releases/latest/download/
+EXE_NAME ?= launcheq.exe
+SHELL := /bin/bash
 
 # CICD triggers this
 .PHONY: set-variable
@@ -61,3 +63,9 @@ build-share:
 maps:
 	@-cd rof && zip -r maps.zip maps
 	@-mv rof/maps.zip bin/
+
+build-windows-if-needed:
+	wget --no-verbose -O runifnew https://github.com/xackery/runifnew/releases/latest/download/runifnew-linux
+	mkdir -p bin
+	chmod +x runifnew
+	./runifnew -cmd "make build-windows" -url "${PATCHER_URL}/${EXE_NAME}" -urlPath "bin/launcheq.exe" main.go client/ config/

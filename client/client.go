@@ -49,7 +49,7 @@ func New(version string, patcherUrl string) (*Client, error) {
 		patcherUrl:    patcherUrl,
 		version:       version,
 		httpClient: &http.Client{
-			Timeout: 3 * time.Second,
+			Timeout: 30 * time.Second,
 		},
 	}
 	exeName, err := os.Executable()
@@ -175,6 +175,13 @@ func (c *Client) Patch() {
 		}
 		c.logf("Since files were patched, waiting 5 seconds before launching EverQuest...")
 		time.Sleep(5 * time.Second)
+	}
+
+	if !c.cfg.IsAutoLaunch {
+		c.logf("Finished in %0.2f seconds", time.Since(start).Seconds())
+		c.logf("EverQuest is now patched and up to date.")
+		Exit(0)
+		return
 	}
 
 	c.logf("Launching EverQuest from %s", c.currentPath)
